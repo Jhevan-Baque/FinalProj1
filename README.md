@@ -1,7 +1,7 @@
 # FinalProj1
 
 # Tumbang Preso 2.0
---
+
 ## Features
 
 - **3 Players, 3 Rounds:** Each round, one player is the taya (tagger), the others try to knock down the can and retrieve their slippers.

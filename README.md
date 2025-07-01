@@ -1,7 +1,6 @@
 # FinalProj1
 
 # Tumbang Preso 2.0
-
 --
 ## Features
 

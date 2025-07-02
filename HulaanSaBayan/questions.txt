@@ -1,60 +1,59 @@
-What is the capital of the Philippines?,Manila,Cebu,Davao,Iloilo
-Who was the first president of the Philippines?,Emilio Aguinaldo,Manuel L. Quezon,Jose Rizal,Andres Bonifacio
-What is the national language of the Philippines?,Filipino,English,Cebuano,Spanish
-What is the largest island in the Philippines?,Luzon,Mindanao,Visayas,Palawan
-Who is known as the Hero of Tirad Pass?,Gregorio del Pilar,Antonio Luna,Emilio Jacinto,Diego Silang
-Which Filipino boxer is an 8-division world champion?,Manny Pacquiao,Nonito Donaire,Gerry Peñalosa,Donnie Nietes
-What is the longest river in the Philippines?,Cagayan River,Pampanga River,Pasig River,Agusan River
-What is the Philippine national fruit?,Mango,Banana,Dalandan,Pineapple
-Which volcano had a major eruption in 1991?,Mount Pinatubo,Mayon Volcano,Taal Volcano,Mount Apo
-What is the name of the Philippine national anthem?,Lupang Hinirang,Bayang Magiliw,Pilipinas Kong Mahal,Sa Ugoy ng Duyan
-Who wrote Noli Me Tangere?,Jose Rizal,Andres Bonifacio,Apolinario Mabini,Graciano Lopez Jaena
-Which city is known as the Summer Capital of the Philippines?,Baguio,Davao,Boracay,Tagaytay
-What Filipino festival is held in Cebu every January?,Sinulog,Ati-Atihan,Pahiyas,Panagbenga
-Which island is famous for its white sand beach?,Boracay,Palawan,Bohol,Siargao
-Who was the first Filipina Miss Universe?,Gloria Diaz,Margarita Moran,Pia Wurtzbach,Catriona Gray
-What is the national bird of the Philippines?,Philippine Eagle,Mayang Paking,Kingfisher,Hornbill
-Which body of water lies to the west of the Philippines?,South China Sea,Philippine Sea,Pacific Ocean,Indian Ocean
-Who is considered the Father of the Philippine Revolution?,Andres Bonifacio,Jose Rizal,Emilio Aguinaldo,Apolinario Mabini
-What is the traditional Filipino house called?,Bahay Kubo,Bahay na Bato,Kamalig,Barrio House
-Which city is known as the Queen City of the South?,Cebu City,Iloilo City,Davao City,General Santos
-What is the currency of the Philippines?,Peso,Dollar,Yen,Ringgit
-What is the Filipino martial art that uses sticks?,Arnis,Karate,Taekwondo,Kali
-Which is the highest mountain in the Philippines?,Mount Apo,Mount Pulag,Mount Banahaw,Mount Arayat
-Which Philippine hero was known as The Sublime Paralytic?,Apolinario Mabini,Jose Rizal,Marcelo H. del Pilar,Emilio Jacinto
-Which Philippine festival celebrates the bountiful harvest in Lucban, Quezon?,Pahiyas Festival,Panagbenga,Sandugo,Kadayawan
-Which dish is made of pork or chicken stewed in soy sauce and vinegar?,Adobo,Menudo,Sinigang,Kare-Kare
-Which Philippine island is known for the Chocolate Hills?,Bohol,Negros,Cebu,Panay
-Who discovered the Philippines for Spain in 1521?,Ferdinand Magellan,Christopher Columbus,Juan Luna,Miguel Lopez de Legazpi
-Which sea creature is featured on the old 1-centavo coin?,Bangus,Sea Turtle,Butanding,Maya
-What is the Filipino term for traditional tattooing?,Batok,Tinta,Pintura,Ukab
-What is the smallest province in the Philippines?,Batanes,Marinduque,Camiguin,Siquijor
-What is the longest river in the Philippines?,Cagayan River,Pampanga River,Agusan River,Pasig River
-What city is known as the Walled City?,Intramuros,Vigan,Taguig,Makati
-Who is the national hero of the Philippines?,Jose Rizal,Andres Bonifacio,Emilio Aguinaldo,Apolinario Mabini
-Which mountain is the highest in the Philippines?,Mount Apo,Mount Pulag,Mount Banahaw,Mount Arayat
-What is the currency of the Philippines?,Peso,Dollar,Ringgit,Yen
-Which city is known as the City of Pines?,Baguio,Cebu,Davao,Tagaytay
-What Filipino dish is known for its sour broth?,Sinigang,Adobo,Kaldereta,Kare-Kare
-Which island is famous for the Chocolate Hills?,Bohol,Palawan,Cebu,Negros
-Who was the first female president of the Philippines?,Corazon Aquino,Gloria Arroyo,Leni Robredo,Miriam Santiago
-What sea lies east of the Philippines?,Philippine Sea,South China Sea,Pacific Ocean,Indian Ocean
-What is the most active volcano in the Philippines?,Mayon Volcano,Taal Volcano,Pinatubo,Apo
-Which city is known as the Queen City of the South?,Cebu,Davao,Iloilo,Bacolod
-What is the national tree of the Philippines?,Narra,Mahogany,Bamboo,Molave
-Which hero is known as the Great Plebeian?,Andres Bonifacio,Jose Rizal,Marcelo H del Pilar,Diego Silang
-What is the national flower of the Philippines?,Sampaguita,Rosal,Gumamela,Ilang-Ilang
-Which island is known for its surfing waves?,Siargao,Palawan,Boracay,Camiguin
-What is the Philippine national dance?,Tinikling,Itik-Itik,Carinosa,Pandanggo
-What is the main ingredient of Laing?,Gabi Leaves,Kangkong,Pechay,Malunggay
-Which festival is celebrated in Iloilo?,Dinagyang,Sinulog,Panagbenga,Pahiyas
-Who is the Father of the Philippine Constitution?,Felipe Calderon,Jose Rizal,Apolinario Mabini,Pedro Paterno
-Which province is known for the Moriones Festival?,Marinduque,Bohol,Quezon,Antique
-Who painted the Spoliarium?,Juan Luna,Fernando Amorsolo,Carlos Francisco,BenCab
-Which body of water separates Luzon and Mindoro?,Verde Island Passage,Sulu Sea,Tañon Strait,San Bernardino Strait
-What is the name of the Filipino sun god?,Apolaki,Bathala,Lakampati,Lakapati
-What instrument is used in traditional Filipino kulintang music?,Gongs,Guitar,Violin,Drums
-What fruit is known as the King of Fruits in the Philippines?,Durian,Mango,Pineapple,Lanzones
-What is the meaning of the word Luzon?,Big land,North land,East land,Warrior land
-Which Filipino invented the Moon Buggy used on the moon?,Eduardo San Juan,Gregorio Zara,Angel Alcala,Julian Felipe
-What is the main mode of transportation in the Philippines?,Jeepney,Tricycle,Bus,Kalesa
+What is the capital of the Philippines?,Manila
+Who was the first president of the Philippines?,Emilio Aguinaldo
+What is the national language of the Philippines?,Filipino
+What is the largest island in the Philippines?,Luzon
+Who is known as the Hero of Tirad Pass?,Gregorio del Pilar
+Which Filipino boxer is an 8-division world champion?,Manny Pacquiao
+What is the longest river in the Philippines?,Cagayan River
+What is the Philippine national fruit?,Mango
+Which volcano had a major eruption in 1991?,Mount Pinatubo
+What is the name of the Philippine national anthem?,Lupang Hinirang
+Who wrote Noli Me Tangere?,Jose Rizal
+Which city is known as the Summer Capital of the Philippines?,Baguio
+What Filipino festival is held in Cebu every January?,Sinulog
+Which island is famous for its white sand beach?,Boracay
+Who was the first Filipina Miss Universe?,Gloria Diaz
+What is the national bird of the Philippines?,Philippine Eagle
+Which body of water lies to the west of the Philippines?,South China Sea
+Who is considered the Father of the Philippine Revolution?,Andres Bonifacio
+What is the traditional Filipino house called?,Bahay Kubo
+Which city is known as the Queen City of the South?,Cebu City
+What is the currency of the Philippines?,Peso
+What is the Filipino martial art that uses sticks?,Arnis
+Which is the highest mountain in the Philippines?,Mount Apo
+Which Philippine hero was known as The Sublime Paralytic?,Apolinario Mabini
+Which Philippine festival celebrates the bountiful harvest in Lucban, Quezon?,Pahiyas Festival
+Which dish is made of pork or chicken stewed in soy sauce and vinegar?,Adobo
+Which Philippine island is known for the Chocolate Hills?,Bohol
+Who discovered the Philippines for Spain in 1521?,Ferdinand Magellan
+Which sea creature is featured on the old 1-centavo coin?,Bangus
+What is the Filipino term for traditional tattooing?,Batok
+What is the smallest province in the Philippines?,Batanes
+What city is known as the Walled City?,Intramuros
+Who is the national hero of the Philippines?,Jose Rizal
+Which mountain is the highest in the Philippines?,Mount Apo
+What is the currency of the Philippines?,Peso
+Which city is known as the City of Pines?,Baguio
+What Filipino dish is known for its sour broth?,Sinigang
+Which island is famous for the Chocolate Hills?,Bohol
+Who was the first female president of the Philippines?,Corazon Aquino
+What sea lies east of the Philippines?,Philippine Sea
+What is the most active volcano in the Philippines?,Mayon Volcano
+Which city is known as the Queen City of the South?,Cebu
+What is the national tree of the Philippines?,Narra
+Which hero is known as the Great Plebeian?,Andres Bonifacio
+What is the national flower of the Philippines?,Sampaguita
+Which island is known for its surfing waves?,Siargao
+What is the Philippine national dance?,Tinikling
+What is the main ingredient of Laing?,Gabi Leaves
+Which festival is celebrated in Iloilo?,Dinagyang
+Who is the Father of the Philippine Constitution?,Felipe Calderon
+Which province is known for the Moriones Festival?,Marinduque
+Who painted the Spoliarium?,Juan Luna
+Which body of water separates Luzon and Mindoro?,Verde Island Passage
+What is the name of the Filipino sun god?,Apolaki
+What instrument is used in traditional Filipino kulintang music?,Gongs
+What fruit is known as the King of Fruits in the Philippines?,Durian
+What is the meaning of the word Luzon?,Big land
+Which Filipino invented the Moon Buggy used on the moon?,Eduardo San Juan
+What is the main mode of transportation in the Philippines?,Jeepney

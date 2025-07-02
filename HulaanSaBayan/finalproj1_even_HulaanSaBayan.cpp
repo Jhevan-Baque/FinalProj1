@@ -138,10 +138,18 @@ void waitAllPlayers(int threadIndex, vector<Player>& quizPlayers) {
     }
 }
 
+string trim(const string& str) {
+    size_t first = str.find_first_not_of(" \t\n\r\f\v");
+    if (first == string::npos) return "";
+    size_t last = str.find_last_not_of(" \t\n\r\f\v");
+    return str.substr(first, (last - first + 1));
+}
+
 bool checkAnswer(Player& player, const string& correctAnswer) {
-    string playerAnswer = player.consumeLatestAnswer();
+    string playerAnswer = trim(player.consumeLatestAnswer());
+    string correctLower = trim(correctAnswer);
+
     transform(playerAnswer.begin(), playerAnswer.end(), playerAnswer.begin(), ::tolower);
-    string correctLower = correctAnswer;
     transform(correctLower.begin(), correctLower.end(), correctLower.begin(), ::tolower);
 
     return playerAnswer == correctLower;
@@ -194,7 +202,7 @@ void simulateGame(vector<Player>& quizPlayers) {
 
         cout << "===== ROUND " << i + 1 << " =====\n";
         cout << q.question << "\n";
-        cout << "(Type your answer):\n";
+        cout << "(Type your answer)\n";
 
         vector<thread> gameThreads;
 

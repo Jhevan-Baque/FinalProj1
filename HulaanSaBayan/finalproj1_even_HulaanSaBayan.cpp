@@ -5,7 +5,6 @@
 #include <limits>
 #include <mutex>
 #include <vector>
-#include <cctype>
 #include <latch>
 #include <barrier>
 #include <future>
@@ -27,24 +26,21 @@ class Player {
 private:
     string name;
     int score;
-    bool phoneAFriend;
-    bool option5050;
-    bool askTheAudience;
+    string answer;
     int id;
-    char answer;
 
 public:
     Player() {
         name = "";
         score = 0;
-        answer = ' ';
+        answer = "";
         id = 0;
     }
 
     Player(string passedName, int id) {
         name = passedName;
         score = 0;
-        answer = ' ';
+        answer = "";
         this->id = id;
     }
 
@@ -64,13 +60,13 @@ public:
         return score;
     }
 
-    void setLatestAnswer(char playerAnswer) {
+    void setLatestAnswer(string playerAnswer) {
         answer = playerAnswer;
     }
 
-    char consumeLatestAnswer() {
-        char temp = answer;
-        answer = ' ';
+    string consumeLatestAnswer() {
+        string temp = answer;
+        answer = "";
         return temp;
     }
 };
@@ -97,7 +93,6 @@ int inputValidationMenu(int min, int max, string message) {
 struct Question {
     string question;
     string correct;
-    vector<string> choices;
 };
 
 vector<Question> loadQuestions(const string& filename) {
@@ -114,14 +109,10 @@ vector<Question> loadQuestions(const string& filename) {
             tokens.push_back(part);
         }
 
-        if (tokens.size() == 5) {
+        if (tokens.size() >= 2) {
             Question q;
             q.question = tokens[0];
             q.correct = tokens[1];
-            q.choices = {tokens[1], tokens[2], tokens[3], tokens[4]};
-
-            shuffle(q.choices.begin(), q.choices.end(), default_random_engine(random_device{}()));
-
             questions.push_back(q);
         }
     }
@@ -147,35 +138,32 @@ void waitAllPlayers(int threadIndex, vector<Player>& quizPlayers) {
     }
 }
 
-bool checkAnswer(Player& player, char correctAnswer) {
-    char playerAnswer = player.consumeLatestAnswer();
-    if (playerAnswer == correctAnswer) {
-        player.updateScore(10);
-        return true;
-    } else {
-        return false;
-    }
+bool checkAnswer(Player& player, const string& correctAnswer) {
+    string playerAnswer = player.consumeLatestAnswer();
+    transform(playerAnswer.begin(), playerAnswer.end(), playerAnswer.begin(), ::tolower);
+    string correctLower = correctAnswer;
+    transform(correctLower.begin(), correctLower.end(), correctLower.begin(), ::tolower);
+
+    return playerAnswer == correctLower;
 }
 
-void simulateRound(Player& player, char correctAnswer) {
-    char choice;
+void simulateRound(Player& player, const string& correctAnswer) {
+    string choice;
     future<bool> result;
 
     {
         lock_guard<mutex> lock(mtx);
-        cout << player.getName() << ", enter answer (A, B, C, or D): " << flush;
-        choice = 'A' + (rand() % 4);
-        this_thread::sleep_for(std::chrono::seconds(4 + (rand() % 8)));
-        cout << choice << endl;
+        cout << player.getName() << ", enter your answer: ";
+        getline(cin, choice);
         player.setLatestAnswer(choice);
         result = async(launch::async, checkAnswer, ref(player), correctAnswer);
     }
 
     gameBarrier->arrive_and_wait();
-    
+
     {
         lock_guard<mutex> lock(mtx);
-        if(revealAnswer){
+        if (revealAnswer) {
             cout << "\nCorrect Answer: " << correctAnswer << "\n\n";
             revealAnswer = false;
         }
@@ -183,145 +171,79 @@ void simulateRound(Player& player, char correctAnswer) {
 
     {
         lock_guard<mutex> lock(mtx);
-        
         cout << player.getName() << " answered: " << choice << endl;
         if (result.get()) {
             cout << "Correct!\n";
+            player.updateScore(10);
         } else {
             cout << "Incorrect!\n";
         }
     }
 }
 
-void simulateRoundManual(Player& player, char correctAnswer) {
-    char choice;
-    future<bool> result;
-
-    {
-        lock_guard<mutex> lock(mtx);
-        cout << player.getName() << ", enter answer (A, B, C, or D): ";
-        cin >> choice;
-        choice = toupper(choice);
-        player.setLatestAnswer(choice);
-        result = async(launch::async, checkAnswer, ref(player), correctAnswer);
-    }
-
-    gameBarrier->arrive_and_wait();
-    
-    {
-        lock_guard<mutex> lock(mtx);
-        if(revealAnswer){
-            cout << "\nCorrect Answer: " << correctAnswer << "\n\n";
-            revealAnswer = false;
-        }
-    }
-
-    {
-        lock_guard<mutex> lock(mtx);
-        
-        cout << player.getName() << " answered: " << choice << endl;
-        if (result.get()) {
-            cout << "Correct!\n";
-        } else {
-            cout << "Incorrect!\n";
-        }
-    }
-}
-
-void simulateGame(vector<Player>& quizPlayers, int menuChoice) {
-    
+void simulateGame(vector<Player>& quizPlayers) {
     int numPlayers = quizPlayers.size();
     vector<Question> allQuestions = loadQuestions("questions.txt");
-    
+
     shuffle(allQuestions.begin(), allQuestions.end(), default_random_engine(random_device{}()));
-    vector<Question> gameQuestions(allQuestions.begin(), allQuestions.begin() + 5);
-    
-    
-    for(int i = 0; i < 5; i++){
+    vector<Question> gameQuestions(allQuestions.begin(), allQuestions.begin() + min(5, (int)allQuestions.size()));
+
+    for (int i = 0; i < gameQuestions.size(); i++) {
         Question& q = gameQuestions[i];
         revealAnswer = true;
-        
+
         cout << "===== ROUND " << i + 1 << " =====\n";
         cout << q.question << "\n";
-        
-        char correctAnswer = ' ';
-        for (int i = 0; i < 4; ++i) {
-            char label = 'A' + i;
-            cout << label << ") " << q.choices[i] << "\n";
-            if (q.choices[i] == q.correct) {
-                correctAnswer = label;
-            }
-        }
-        cout << endl;
-        
+        cout << "(Type your answer):\n";
+
         vector<thread> gameThreads;
-        
-        if(menuChoice == 1){
-            
-            for (int i = 0; i < numPlayers; ++i) {
-                gameThreads.emplace_back(simulateRound, ref(quizPlayers[i]), correctAnswer);
-            }
-        
-            for (auto& t : gameThreads) {
-                t.join();
-            }
-            
-        } else if(menuChoice == 2){
-            for (int i = 0; i < numPlayers; ++i) {
-                gameThreads.emplace_back(simulateRoundManual, ref(quizPlayers[i]), correctAnswer);
-            }
-        
-            for (auto& t : gameThreads) {
-                t.join();
-            }
+
+        for (int i = 0; i < numPlayers; ++i) {
+            gameThreads.emplace_back(simulateRound, ref(quizPlayers[i]), q.correct);
         }
-        
+
+        for (auto& t : gameThreads) {
+            t.join();
+        }
+
         this_thread::sleep_for(std::chrono::seconds(5));
-    
+
         cout << "\nCurrent ScoreBoard:\n";
         for (int i = 0; i < numPlayers; i++) {
             cout << quizPlayers[i].getName() << " Score: " << quizPlayers[i].getScore() << endl;
         }
-    
+
         cout << "\n\n";
     }
-    
-        /* final results */
+
     int maxScore = -99;
-    for (auto& p: quizPlayers) {
+    for (auto& p : quizPlayers) {
         maxScore = max(maxScore, p.getScore());
     }
     int count = 0;
-    for (auto& p: quizPlayers) {
+    for (auto& p : quizPlayers) {
         if (p.getScore() == maxScore) {
             count++;
         }
     }
 
     cout << "\n=========== FINAL RESULTS ===========\n";
-    for (auto& p: quizPlayers) {
+    for (auto& p : quizPlayers) {
         cout << p.getName() << " — " << p.getScore() << " pts";
-        if (p.getScore() == maxScore && count == 1) { 
+        if (p.getScore() == maxScore && count == 1) {
             cout << "  <-- WINNER!";
         } else if (p.getScore() == maxScore && count > 1) {
             cout << "  <-- IT'S A TIE!";
         }
         cout << "\n";
     }
-
 }
 
 int main() {
     srand(static_cast<unsigned int>(time(nullptr)));
 
-    cout << "Welcome to a Filipino Trivia Game\n\n";
-    
-    cout << "1. Simulated\n";
-    cout << "2. Manual\n\n";
-    
-    int menuChoice;
-    menuChoice = inputValidationMenu(1, 2, "Enter here: ");
-    
+    cout << "Welcome to Hulaan ng Bayan\n\n";
+
     int numPlayers = inputValidationMenu(1, 9999, "Enter number of players: ");
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
@@ -345,11 +267,8 @@ int main() {
     }
 
     cout << "\nAll players are ready. Starting game now...\n\n";
-        
-    simulateGame(quizPlayers, menuChoice);
-    
 
-    
+    simulateGame(quizPlayers);
 
     return 0;
 }

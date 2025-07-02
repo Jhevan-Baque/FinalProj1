@@ -66,3 +66,58 @@
   - Returns `true` if the tag is successful, `false` otherwise.
 
 ---
+
+# Hulaan ng Bayan
+
+**Hulaan ng Bayan** is a multithreaded, terminal-based quiz game in C++ where multiple players answer questions in real time. It features synchronization with modern C++20 threading primitives like `latch`, `barrier`, and `future`, showcasing both concurrency and interactivity.
+
+---
+
+## 🎮 Features
+
+- **Multiple Players**: Supports 1 to virtually unlimited players.
+- **Randomized Questions**: Loads from an external `questions.txt` file and randomly selects 5 for each game session.
+- **Thread Synchronization**: Utilizes C++20 concurrency tools (`latch`, `barrier`, `mutex`, `future`) to manage player coordination and game flow.
+- **Score Tracking**: Each player earns points for correct answers, with a final scoreboard and winner announcement.
+- **Answer Normalization**: Answers are case-insensitive and stripped before comparison.
+- **Real-time Input**: User input is handled synchronously for smooth player experience while logic runs in parallel threads.
+
+---
+
+## 🕹️ How to Play
+
+1. **Launch the Game**:
+The terminal will display a welcome message and prompt you to enter the number of players.
+
+2. **Player Setup**:
+Each player enters their name one by one. Names are associated with their ID.
+
+3. **Game Rounds**:
+The game consists of **5 rounds**. In each round:
+- A question is displayed.
+- Each player inputs their answer (synchronously).
+- All answers are evaluated simultaneously after everyone has answered.
+- The correct answer is revealed.
+- Points are awarded (+10 for correct answers).
+
+4. **Scoring & Winner**:
+After all rounds, scores are tallied.
+- The player with the highest score is declared the **winner**.
+- In case of a tie, all top scorers are acknowledged.
+
+---
+
+## 🧠 Code Overview
+
+| **Function / Class** | **Description** |
+|----------------------|-----------------|
+| `Player` class | Represents a player with ID, name, score, and answer tracking. |
+| `waitAllPlayers()` | Handles synchronized player registration using `latch`. |
+| `simulateRound()` | Each player inputs an answer. Answer checking is done concurrently. |
+| `simulateGame()` | Controls the full game loop: loading questions, iterating rounds, scoring. |
+| `inputValidationMenu()` | Ensures robust menu input (integers only, within bounds). |
+| `loadQuestions()` | Loads question-answer pairs from a CSV-style `questions.txt` file. |
+| `checkAnswer()` | Compares player answer to the correct one, ignoring case. |
+
+---
+

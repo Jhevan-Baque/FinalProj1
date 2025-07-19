@@ -1,4 +1,4 @@
-// client.cpp - Quiz Game Client (Hostname + Windows Compatible)
+// client.cpp - Quiz Game Client (Cross Platform))
 
 #include <iostream>
 #include <string>
@@ -17,7 +17,7 @@
 
 using namespace std;
 
-#define SERVER_HOSTNAME "database.tambytes.cloud"
+#define SERVER_IP "147.189.169.152"
 #define PORT 12345
 #define BUFFER_SIZE 2048
 
@@ -32,39 +32,29 @@ int main() {
     }
 #endif
 
-    addrinfo hints{}, *res = nullptr;
-    hints.ai_family = AF_INET;       // IPv4
-    hints.ai_socktype = SOCK_STREAM; // TCP
+    sockaddr_in server_addr{};
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+    inet_pton(AF_INET, SERVER_IP, &server_addr.sin_addr);
 
-    string port_str = to_string(PORT);
-    int result = getaddrinfo(SERVER_HOSTNAME, port_str.c_str(), &hints, &res);
-    if (result != 0 || res == nullptr) {
-        cerr << "getaddrinfo failed: " << result << endl;
+    int client_socket =
 #ifdef _WIN32
-        WSACleanup();
-#endif
-        return 1;
-    }
-
-    int client_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-#ifdef _WIN32
+        socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (client_socket == INVALID_SOCKET) {
         cerr << "Socket creation failed. Error: " << WSAGetLastError() << endl;
-        freeaddrinfo(res);
         WSACleanup();
         return 1;
     }
 #else
+        socket(AF_INET, SOCK_STREAM, 0);
     if (client_socket < 0) {
         perror("socket");
-        freeaddrinfo(res);
         return 1;
     }
 #endif
 
-    if (connect(client_socket, res->ai_addr, static_cast<int>(res->ai_addrlen)) < 0) {
+    if (connect(client_socket, (sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
         cerr << "Connection failed.\n";
-        freeaddrinfo(res);
 #ifdef _WIN32
         closesocket(client_socket);
         WSACleanup();
@@ -74,7 +64,6 @@ int main() {
         return 1;
     }
 
-    freeaddrinfo(res);
     cout << "Connected to quiz server.\nEnter your player name: ";
     string name;
     getline(cin, name);

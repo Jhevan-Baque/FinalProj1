@@ -1,33 +1,35 @@
-// server.cpp - Quiz Game Server (Auto-Start After 2 Players + Reset Loop)
-
 #include <iostream>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <random>
 #include <thread>
 #include <mutex>
 #include <atomic>
+#include <algorithm>
+#include <random>
 #include <chrono>
 #include <cstring>
 
 #ifdef _WIN32
-    #include <winsock2.h>
-    #include <ws2tcpip.h>
-    #pragma comment(lib, "ws2_32.lib")
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
 #else
-    #include <unistd.h>
-    #include <arpa/inet.h>
-    #include <sys/socket.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#define SOCKET int
+#define INVALID_SOCKET -1
+#define SOCKET_ERROR -1
 #endif
 
 using namespace std;
 
-#define PORT 8080
-#define BUFFER_SIZE 2048
-#define MAX_CLIENTS 50
-#define START_AFTER_SECONDS 30
-#define MIN_PLAYERS 2
+const int PORT = 12345;
+const int BUFFER_SIZE = 1024;
+const int MIN_PLAYERS = 2;
+const int START_DELAY_SECONDS = 30;
+const int MAX_CLIENTS = 50;
 
 struct ClientInfo {
     SOCKET socket;
@@ -38,10 +40,14 @@ struct ClientInfo {
 
 struct Question {
     string question;
-    string correct;
+    string answer;
 };
 
 mutex clients_mutex;
+vector<ClientInfo> clients;
+atomic<bool> game_started{false};
+
+// Example questions
 vector<Question> questions_pool = {
     {"What is the capital of the Philippines?", "Manila"},
     {"Who was the first president of the Philippines?", "Emilio Aguinaldo"},
@@ -104,14 +110,15 @@ vector<Question> questions_pool = {
     {"What is the main mode of transportation in the Philippines?", "Jeepney"}
 };
 
-void send_to_client(SOCKET sock, const string& msg) {
+void send_to(SOCKET sock, const string& msg) {
     send(sock, msg.c_str(), static_cast<int>(msg.size()), 0);
 }
 
-void broadcast(const vector<ClientInfo>& clients, const string& message) {
-    for (const auto& client : clients) {
+void broadcast(const string& msg) {
+    lock_guard<mutex> lock(clients_mutex);
+    for (auto& client : clients) {
         if (!client.disconnected) {
-            send_to_client(client.socket, message);
+            send_to(client.socket, msg);
         }
     }
 }
@@ -124,57 +131,48 @@ void close_socket(SOCKET sock) {
 #endif
 }
 
-vector<ClientInfo> clients;
-atomic<bool> game_started{false};
-
 void handle_client(SOCKET client_socket) {
     char buffer[BUFFER_SIZE]{};
-    int bytes_received = recv(client_socket, buffer, BUFFER_SIZE - 1, 0);
-    if (bytes_received <= 0) {
+    int len = recv(client_socket, buffer, BUFFER_SIZE - 1, 0);
+    if (len <= 0) {
         close_socket(client_socket);
         return;
     }
-
-    buffer[bytes_received] = '\0';
-    string player_name(buffer);
+    buffer[len] = '\0';
+    string name(buffer);
 
     {
         lock_guard<mutex> lock(clients_mutex);
-        clients.push_back({client_socket, player_name});
-        cout << player_name << " joined (" << clients.size() << " players).\n";
-
-        send_to_client(client_socket, "Welcome " + player_name + "! Waiting for others...\n");
+        clients.push_back({client_socket, name});
+        cout << name << " joined (" << clients.size() << " players).\n";
+        send_to(client_socket, "Welcome " + name + "! Waiting for others...\n");
     }
 
     if (clients.size() == MIN_PLAYERS && !game_started.exchange(true)) {
         thread([] {
-            cout << "Minimum players reached. Waiting 30 seconds for more players...\n";
-            for (int i = START_AFTER_SECONDS; i > 0; --i) {
-                string countdown_msg = "Game starting in " + to_string(i) + " seconds...\n";
-                broadcast(clients, countdown_msg);
+            for (int i = START_DELAY_SECONDS; i > 0; --i) {
+                broadcast("Game starts in " + to_string(i) + " seconds...\n");
                 this_thread::sleep_for(chrono::seconds(1));
             }
-            broadcast(clients, "Game starting now...\n");
-            cout << "Game starting...\n";
+            broadcast("Game is starting now!\n");
         }).detach();
     }
 }
 
 void run_quiz_round() {
-    vector<Question> questions = questions_pool;
-    shuffle(questions.begin(), questions.end(), mt19937(random_device{}()));
-    int num_questions = min(5, (int)questions.size());
+    shuffle(questions_pool.begin(), questions_pool.end(), mt19937(random_device{}()));
+    int num_q = min(5, (int)questions_pool.size());
 
-    for (int i = 0; i < num_questions; ++i) {
-        string qtext = "\nQuestion " + to_string(i + 1) + ": " + questions[i].question + "\nAnswer: ";
-        broadcast(clients, qtext);
+    for (int i = 0; i < num_q; ++i) {
+        string q = "Q" + to_string(i + 1) + ": " + questions_pool[i].question + "\nAnswer: ";
+        broadcast(q);
 
-        vector<thread> threads;
+        vector<thread> answer_threads;
 
         {
             lock_guard<mutex> lock(clients_mutex);
             for (auto& client : clients) {
-                threads.emplace_back([&client, &q = questions[i]]() {
+                answer_threads.emplace_back([&client, i]() {
                     char buffer[BUFFER_SIZE]{};
                     int len = recv(client.socket, buffer, BUFFER_SIZE - 1, 0);
                     if (len <= 0) {
@@ -182,73 +180,51 @@ void run_quiz_round() {
                         close_socket(client.socket);
                         return;
                     }
-
                     buffer[len] = '\0';
-                    string answer = buffer;
-                    string correct = q.correct;
+                    string ans(buffer);
 
-                    transform(answer.begin(), answer.end(), answer.begin(), ::tolower);
+                    string correct = questions_pool[i].answer;
+                    transform(ans.begin(), ans.end(), ans.begin(), ::tolower);
                     transform(correct.begin(), correct.end(), correct.begin(), ::tolower);
 
-                    if (answer == correct || answer.find(correct) != string::npos) {
+                    if (ans == correct || ans.find(correct) != string::npos) {
                         client.score += 10;
-                        send_to_client(client.socket, "Correct! (+10 pts)\n");
+                        send_to(client.socket, "Correct! (+10 pts)\n");
                     } else {
-                        send_to_client(client.socket, "Wrong. Correct answer: " + q.correct + "\n");
+                        send_to(client.socket, "Incorrect. Correct answer: " + questions_pool[i].answer + "\n");
                     }
                 });
             }
         }
 
-        for (auto& t : threads) t.join();
+        for (auto& t : answer_threads) t.join();
 
-        string scoreboard = "\nSCOREBOARD:\n";
-        for (const auto& client : clients) {
+        // Scoreboard
+        string scoreboard = "\nScoreboard:\n";
+        for (auto& client : clients) {
             if (!client.disconnected) {
                 scoreboard += client.name + ": " + to_string(client.score) + " pts\n";
             }
         }
-        broadcast(clients, scoreboard);
+        broadcast(scoreboard);
     }
 
-    string result = "\nFINAL RESULTS:\n";
-    vector<ClientInfo> finalists;
+    // Final Result
+    string result = "\nFinal Results:\n";
+    sort(clients.begin(), clients.end(), [](const ClientInfo& a, const ClientInfo& b) {
+        return a.score > b.score;
+    });
+
+    for (size_t i = 0; i < clients.size(); ++i) {
+        if (!clients[i].disconnected) {
+            result += to_string(i + 1) + ". " + clients[i].name + " - " + to_string(clients[i].score) + " pts\n";
+        }
+    }
+
+    broadcast(result + "\nGame over!\n");
 
     for (auto& c : clients)
-        if (!c.disconnected) finalists.push_back(c);
-
-    sort(finalists.begin(), finalists.end(),
-         [](const ClientInfo& a, const ClientInfo& b) { return a.score > b.score; });
-
-    for (size_t i = 0; i < finalists.size(); i++) {
-        result += to_string(i + 1) + ". " + finalists[i].name + " - " + to_string(finalists[i].score) + " pts\n";
-    }
-
-    if (!finalists.empty()) {
-        int top = finalists[0].score;
-        vector<string> winners;
-        for (auto& c : finalists)
-            if (c.score == top) winners.push_back(c.name);
-
-        if (winners.size() == 1)
-            result += "\nWinner: " + winners[0] + "\n";
-        else {
-            result += "\nIt's a tie between: ";
-            for (size_t i = 0; i < winners.size(); ++i) {
-                result += winners[i];
-                if (i != winners.size() - 1) result += ", ";
-            }
-            result += "\n";
-        }
-    }
-
-    broadcast(clients, result + "\nGame over\nThank you for playing!\n");
-
-    for (auto& c : clients) {
-        if (!c.disconnected) {
-            close_socket(c.socket);
-        }
-    }
+        if (!c.disconnected) close_socket(c.socket);
 }
 
 int main() {
@@ -262,40 +238,48 @@ int main() {
         game_started = false;
 
         SOCKET server_socket = socket(AF_INET, SOCK_STREAM, 0);
+        if (server_socket == INVALID_SOCKET) {
+            cerr << "Socket creation failed.\n";
+            return 1;
+        }
+
         sockaddr_in server_addr{};
         server_addr.sin_family = AF_INET;
-        server_addr.sin_addr.s_addr = INADDR_ANY;
         server_addr.sin_port = htons(PORT);
+        server_addr.sin_addr.s_addr = INADDR_ANY;
 
-        if (bind(server_socket, (sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+        if (bind(server_socket, (sockaddr*)&server_addr, sizeof(server_addr)) == SOCKET_ERROR) {
             cerr << "Bind failed.\n";
             close_socket(server_socket);
             continue;
         }
 
         listen(server_socket, MAX_CLIENTS);
-        cout << "\nServer listening on port " << PORT << ". Waiting for players...\n";
+        cout << "Server started on port " << PORT << "\n";
 
         thread([server_socket]() {
             while (!game_started) {
                 sockaddr_in client_addr{};
-                socklen_t len = sizeof(client_addr);
-                SOCKET client_socket = accept(server_socket, (sockaddr*)&client_addr, &len);
-                if (client_socket >= 0) {
-                    thread(handle_client, client_socket).detach();
+                socklen_t addr_len = sizeof(client_addr);
+                SOCKET client_sock = accept(server_socket, (sockaddr*)&client_addr, &addr_len);
+                if (client_sock != INVALID_SOCKET) {
+                    thread(handle_client, client_sock).detach();
                 }
                 this_thread::sleep_for(chrono::milliseconds(100));
             }
         }).detach();
 
-        while (!game_started) this_thread::sleep_for(chrono::milliseconds(100));
+        // Wait for game start
+        while (!game_started) {
+            this_thread::sleep_for(chrono::milliseconds(200));
+        }
 
-        this_thread::sleep_for(chrono::seconds(START_AFTER_SECONDS));
+        this_thread::sleep_for(chrono::seconds(START_DELAY_SECONDS));
         run_quiz_round();
         close_socket(server_socket);
 
-        cout << "\nRestarting server...\n";
-        this_thread::sleep_for(chrono::seconds(3));
+        cout << "Restarting server in 5 seconds...\n";
+        this_thread::sleep_for(chrono::seconds(5));
     }
 
 #ifdef _WIN32
